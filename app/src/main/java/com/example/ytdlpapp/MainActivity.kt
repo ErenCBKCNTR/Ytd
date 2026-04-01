@@ -103,9 +103,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_downloads -> {
                     startActivity(Intent(this, DownloadsActivity::class.java))
                 }
-                R.id.nav_youtube_login -> {
-                    startActivity(Intent(this, YoutubeLoginActivity::class.java))
-                }
             }
             true
         }
@@ -196,7 +193,8 @@ class MainActivity : AppCompatActivity() {
                 if (isAudio) {
                     request.addOption("--extract-audio")
                     request.addOption("--audio-format", "mp3")
-                    request.addOption("--embed-thumbnail")
+                    // Removing --embed-thumbnail to prevent Error 2 (No such file or directory *.webp) during ffmpeg conversion
+                    // request.addOption("--embed-thumbnail")
 
                     val audioQualityArg = when (selectedQuality) {
                         "320kbps" -> "320K"
@@ -215,7 +213,8 @@ class MainActivity : AppCompatActivity() {
                         else -> "bv*[ext=mp4]+ba[ext=m4a]/b"
                     }
                     request.addOption("-f", formatSelection)
-                    request.addOption("--embed-thumbnail")
+                    // Removing --embed-thumbnail
+                    // request.addOption("--embed-thumbnail")
                 }
 
                 val processId = "DownloadProcess_${System.currentTimeMillis()}"

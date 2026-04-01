@@ -33,9 +33,6 @@
         <activity
             android:name=".PlayerActivity"
             android:theme="@style/Theme.YTDlpApp" />
-        <activity
-            android:name=".YoutubeLoginActivity"
-            android:theme="@style/Theme.YTDlpApp" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
