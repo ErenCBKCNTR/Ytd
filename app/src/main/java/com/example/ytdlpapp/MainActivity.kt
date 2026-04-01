@@ -29,8 +29,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
 
-    private val videoQualities = arrayOf(getString(R.string.quality_best), "1080p", "720p", "480p", "360p")
-    private val audioQualities = arrayOf(getString(R.string.quality_best), "320kbps", "256kbps", "128kbps")
+    private val videoQualities by lazy { arrayOf(getString(R.string.quality_best), "1080p", "720p", "480p", "360p") }
+    private val audioQualities by lazy { arrayOf(getString(R.string.quality_best), "320kbps", "256kbps", "128kbps") }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -45,13 +45,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        try {
+            binding = ActivityMainBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        initLibraries()
-        setupListeners()
-        requestPermissionsOnLaunch()
-        updateQualityDropdown(false)
+            initLibraries()
+            setupListeners()
+            requestPermissionsOnLaunch()
+            updateQualityDropdown(false)
+        } catch (e: Exception) {
+            Log.e(TAG, "Crash in onCreate", e)
+            Toast.makeText(this, "Crash in onCreate: " + e.message, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun updateQualityDropdown(isAudio: Boolean) {
@@ -234,8 +239,8 @@ class MainActivity : AppCompatActivity() {
     private fun initLibraries() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                YoutubeDL.getInstance().init(this@MainActivity)
-                FFmpeg.getInstance().init(this@MainActivity)
+                YoutubeDL.getInstance().init(application)
+                FFmpeg.getInstance().init(application)
 
                 // Auto-update yt-dlp on launch
                 withContext(Dispatchers.Main) {
