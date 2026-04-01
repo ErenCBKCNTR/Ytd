@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">YTDlpApp</string>
+    <string name="url_hint">Paste Video/Music URL here</string>
+    <string name="format_video">Video (MP4)</string>
+    <string name="format_audio">Audio (MP3)</string>
+    <string name="download_button">Download</string>
+    <string name="status_downloading">Downloading... %d%%</string>
+    <string name="status_completed">Download Completed!</string>
+    <string name="status_failed">Download Failed: %s</string>
+    <string name="error_empty_url">Please enter a URL</string>
+    <string name="permission_required">Storage permission is required to save downloads.</string>
+</resources>
