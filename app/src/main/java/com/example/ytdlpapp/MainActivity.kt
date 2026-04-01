@@ -31,8 +31,8 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission granted, handle download
-            startDownload()
+            // Permission granted
+            Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, getString(R.string.permission_required), Toast.LENGTH_LONG).show()
         }
@@ -45,34 +45,63 @@ class MainActivity : AppCompatActivity() {
 
         initLibraries()
         setupListeners()
+        requestPermissionsOnLaunch()
+    }
+
+    private fun requestPermissionsOnLaunch() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+             // For Android 13+, if we want to read media files we'd need READ_MEDIA_VIDEO/AUDIO.
+             // But for writing to Downloads, no permission is strictly required.
+             // We can request notifications permission if needed, but not storage.
+             Log.d(TAG, "Android 10+: Scoped storage applies, no write permission needed for Downloads.")
+        }
     }
 
     private fun setupListeners() {
         binding.btnDownload.setOnClickListener {
-            checkPermissionsAndDownload()
+            startDownload()
+        }
+        binding.btnUpdate.setOnClickListener {
+            updateYoutubeDL()
         }
     }
 
-    private fun checkPermissionsAndDownload() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Scoped storage handles permissions natively for public directories on Android 10+
-            startDownload()
-        } else {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    startDownload()
+    private fun updateYoutubeDL() {
+        binding.btnUpdate.isEnabled = false
+        binding.tvStatus.text = "Updating yt-dlp..."
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                withContext(Dispatchers.Main) {
+                    binding.tvStatus.text = "Update Status: " + status?.name
+                    binding.btnUpdate.isEnabled = true
                 }
-                else -> {
-                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            } catch (e: Exception) {
+                Log.e(TAG, "Update failed", e)
+                withContext(Dispatchers.Main) {
+                    binding.tvStatus.text = "Update failed: ${e.message}"
+                    binding.btnUpdate.isEnabled = true
                 }
             }
         }
     }
 
     private fun startDownload() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, getString(R.string.permission_required), Toast.LENGTH_LONG).show()
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            return
+        }
+
         val url = binding.etUrl.text.toString().trim()
         if (url.isEmpty()) {
             Toast.makeText(this, getString(R.string.error_empty_url), Toast.LENGTH_SHORT).show()
