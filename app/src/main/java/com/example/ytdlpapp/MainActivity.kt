@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import com.example.ytdlpapp.databinding.ActivityMainBinding
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
+import android.content.Intent
+import androidx.core.view.GravityCompat
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +68,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        binding.topAppBar.setNavigationOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+            menuItem.isChecked = true
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+
+            when (menuItem.itemId) {
+                R.id.nav_downloads -> {
+                    startActivity(Intent(this, DownloadsActivity::class.java))
+                }
+            }
+            true
+        }
+
         binding.btnDownload.setOnClickListener {
             startDownload()
         }
@@ -118,7 +136,7 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val youtubeDLDir = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
                     "YTDlpApp"
                 )
                 if (!youtubeDLDir.exists()) {
