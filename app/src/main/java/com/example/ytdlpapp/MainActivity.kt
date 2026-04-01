@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         binding.tvStatus.text = getString(R.string.status_updating)
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.NIGHTLY)
                 withContext(Dispatchers.Main) {
                     binding.tvStatus.text = getString(R.string.status_update_status) + status?.name
                     binding.btnUpdate.isEnabled = true
@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 try {
-                    YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                    YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.NIGHTLY)
                     withContext(Dispatchers.Main) {
                         binding.tvStatus.text = getString(R.string.status_update_complete)
                     }
@@ -181,6 +181,7 @@ class MainActivity : AppCompatActivity() {
 
                 val request = YoutubeDLRequest(url)
                 request.addOption("-o", youtubeDLDir.absolutePath + "/%(title)s.%(ext)s")
+                request.addOption("--extractor-args", "youtube:player_client=android,web")
 
                 val selectedQuality = binding.actvQuality.text.toString()
 
@@ -246,7 +247,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     binding.tvStatus.text = getString(R.string.status_checking_update)
                 }
-                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.NIGHTLY)
                 withContext(Dispatchers.Main) {
                     binding.tvStatus.text = getString(R.string.status_update_status) + status?.name
                 }
