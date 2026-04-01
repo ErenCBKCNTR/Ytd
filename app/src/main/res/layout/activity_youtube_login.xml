@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="YouTube / Google Hesabınızla Giriş Yapın. İşlem bittikten sonra 'Çerezleri Kaydet' butonuna basın. (Bilgileriniz sadece cihazınızda kalır)"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:background="#FFCDD2"
+        android:textColor="#B71C1C"/>
+
+    <Button
+        android:id="@+id/btnSaveCookies"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Giriş Yaptım - Çerezleri Kaydet"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/youtube_red"
+        android:textColor="@android:color/white"/>
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

@@ -103,6 +103,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_downloads -> {
                     startActivity(Intent(this, DownloadsActivity::class.java))
                 }
+                R.id.nav_youtube_login -> {
+                    startActivity(Intent(this, YoutubeLoginActivity::class.java))
+                }
             }
             true
         }
@@ -181,7 +184,12 @@ class MainActivity : AppCompatActivity() {
 
                 val request = YoutubeDLRequest(url)
                 request.addOption("-o", youtubeDLDir.absolutePath + "/%(title)s.%(ext)s")
-                request.addOption("--extractor-args", "youtube:player_client=android,web")
+                request.addOption("--extractor-args", "youtube:player_client=tv_embedded,web_creator,web")
+
+                val cookiesFile = File(filesDir, "cookies.txt")
+                if (cookiesFile.exists() && cookiesFile.length() > 0) {
+                    request.addOption("--cookies", cookiesFile.absolutePath)
+                }
 
                 val selectedQuality = binding.actvQuality.text.toString()
 

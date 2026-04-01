@@ -12,4 +12,5 @@
     <color name="md_theme_dark_onPrimary">#69000A</color>
     <color name="md_theme_dark_primaryContainer">#930013</color>
     <color name="md_theme_dark_onPrimaryContainer">#FFDAD7</color>
+    <color name="youtube_red">#E1001C</color>
 </resources>
