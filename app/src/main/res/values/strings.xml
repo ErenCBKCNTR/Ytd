@@ -9,4 +9,23 @@
     <string name="status_failed">Download Failed: %s</string>
     <string name="error_empty_url">Please enter a URL</string>
     <string name="permission_required">Storage permission is required to save downloads.</string>
+
+    <string name="permission_granted">Storage permission granted</string>
+    <string name="status_updating">Updating yt-dlp...</string>
+    <string name="status_checking_update">Checking for yt-dlp updates...</string>
+    <string name="status_update_status">Update Status: </string>
+    <string name="status_update_failed">Update failed: %s</string>
+    <string name="status_updating_before_download">Updating yt-dlp before download...</string>
+    <string name="status_update_complete">Update complete. Starting download...</string>
+    <string name="quality_best">Best (Default)</string>
+
+    <string name="error_playing_file">Error playing file</string>
+    <string name="error_no_file">No file provided</string>
+
+    <string name="nav_downloads">Downloads</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="update_button">Update yt-dlp</string>
+    <string name="select_quality">Select Quality</string>
+    <string name="action_share">Share</string>
+    <string name="nav_home">Home</string>
 </resources>

@@ -14,7 +14,7 @@
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Downloads"
+            app:title="@string/nav_downloads"
             app:navigationIcon="@android:drawable/ic_menu_revert" />
 
     </com.google.android.material.appbar.AppBarLayout>

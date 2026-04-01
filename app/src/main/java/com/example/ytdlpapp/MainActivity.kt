@@ -1,12 +1,5 @@
 package com.example.ytdlpapp
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -24,21 +17,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.util.Log
+import android.view.View
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
 
-    private val videoQualities = arrayOf("Best (Default)", "1080p", "720p", "480p", "360p")
-    private val audioQualities = arrayOf("Best (Default)", "320kbps", "256kbps", "128kbps")
+    private val videoQualities = arrayOf(getString(R.string.quality_best), "1080p", "720p", "480p", "360p")
+    private val audioQualities = arrayOf(getString(R.string.quality_best), "320kbps", "256kbps", "128kbps")
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
             // Permission granted
-            Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, getString(R.string.permission_required), Toast.LENGTH_LONG).show()
         }
@@ -63,7 +62,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissionsOnLaunch() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permissions = arrayOf(
+                Manifest.permission.READ_MEDIA_VIDEO,
+                Manifest.permission.READ_MEDIA_AUDIO
+            )
+            val notGranted = permissions.filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }
+            if (notGranted.isNotEmpty()) {
+                requestPermissionLauncher.launch(notGranted.first())
+            }
+        } else {
+            // Include Android 10-12 so users always get prompted if they haven't granted it
             if (ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -71,11 +82,6 @@ class MainActivity : AppCompatActivity() {
             ) {
                 requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-             // For Android 13+, if we want to read media files we'd need READ_MEDIA_VIDEO/AUDIO.
-             // But for writing to Downloads, no permission is strictly required.
-             // We can request notifications permission if needed, but not storage.
-             Log.d(TAG, "Android 10+: Scoped storage applies, no write permission needed for Downloads.")
         }
     }
 
@@ -110,18 +116,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateYoutubeDL() {
         binding.btnUpdate.isEnabled = false
-        binding.tvStatus.text = "Updating yt-dlp..."
+        binding.tvStatus.text = getString(R.string.status_updating)
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
                 withContext(Dispatchers.Main) {
-                    binding.tvStatus.text = "Update Status: " + status?.name
+                    binding.tvStatus.text = getString(R.string.status_update_status) + status?.name
                     binding.btnUpdate.isEnabled = true
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Update failed", e)
                 withContext(Dispatchers.Main) {
-                    binding.tvStatus.text = "Update failed: ${e.message}"
+                    binding.tvStatus.text = getString(R.string.status_update_failed, e.message)
                     binding.btnUpdate.isEnabled = true
                 }
             }
@@ -147,15 +153,14 @@ class MainActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.progressBar.progress = 0
         binding.btnDownload.isEnabled = false
-        binding.tvStatus.text = "Updating yt-dlp before download..."
+        binding.tvStatus.text = getString(R.string.status_updating_before_download)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Auto-update before download
                 try {
                     YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
                     withContext(Dispatchers.Main) {
-                        binding.tvStatus.text = "Update complete. Starting download..."
+                        binding.tvStatus.text = getString(R.string.status_update_complete)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Update failed, continuing with download anyway", e)
@@ -186,14 +191,14 @@ class MainActivity : AppCompatActivity() {
                         else -> "0" // best
                     }
                     request.addOption("--audio-quality", audioQualityArg)
-                    request.addOption("-f", "bestaudio/best")
+                    request.addOption("-f", "ba/best")
                 } else {
                     val formatSelection = when (selectedQuality) {
-                        "1080p" -> "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best"
-                        "720p" -> "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best"
-                        "480p" -> "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best"
-                        "360p" -> "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best"
-                        else -> "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+                        "1080p" -> "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080]/b"
+                        "720p" -> "bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720]/b"
+                        "480p" -> "bv*[height<=480][ext=mp4]+ba[ext=m4a]/b[height<=480]/b"
+                        "360p" -> "bv*[height<=360][ext=mp4]+ba[ext=m4a]/b[height<=360]/b"
+                        else -> "bv*[ext=mp4]+ba[ext=m4a]/b"
                     }
                     request.addOption("-f", formatSelection)
                     request.addOption("--embed-thumbnail")
@@ -212,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                     binding.progressBar.visibility = View.GONE
                     binding.tvStatus.text = getString(R.string.status_completed)
                     binding.btnDownload.isEnabled = true
-                    Toast.makeText(this@MainActivity, "Download Complete", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, getString(R.string.status_completed), Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
@@ -231,10 +236,19 @@ class MainActivity : AppCompatActivity() {
             try {
                 YoutubeDL.getInstance().init(this@MainActivity)
                 FFmpeg.getInstance().init(this@MainActivity)
-            } catch (e: YoutubeDLException) {
-                Log.e(TAG, "failed to initialize youtubedl-android", e)
+
+                // Auto-update yt-dlp on launch
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Failed to initialize downloader", Toast.LENGTH_LONG).show()
+                    binding.tvStatus.text = getString(R.string.status_checking_update)
+                }
+                val status = YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                withContext(Dispatchers.Main) {
+                    binding.tvStatus.text = getString(R.string.status_update_status) + status?.name
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Initialization or update failed", e)
+                withContext(Dispatchers.Main) {
+                    binding.tvStatus.text = getString(R.string.status_update_failed, e.message)
                 }
             }
         }

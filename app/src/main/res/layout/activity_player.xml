@@ -17,7 +17,7 @@
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Now Playing"
+            app:title="@string/now_playing"
             app:navigationIcon="@android:drawable/ic_menu_revert"
             app:menu="@menu/menu_player" />
 

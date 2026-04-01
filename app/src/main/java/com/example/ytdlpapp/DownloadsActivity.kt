@@ -63,7 +63,7 @@ class DownloadsActivity : AppCompatActivity() {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        startActivity(Intent.createChooser(shareIntent, "Share file"))
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.action_share)))
     }
 
     private class DownloadsAdapter(

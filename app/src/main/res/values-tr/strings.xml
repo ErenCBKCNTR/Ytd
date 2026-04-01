@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YTDlpApp</string>
+    <string name="url_hint">Video/Müzik URL\'sini buraya yapıştırın</string>
+    <string name="format_video">Video (MP4)</string>
+    <string name="format_audio">Ses (MP3)</string>
+    <string name="download_button">İndir</string>
+    <string name="status_downloading">İndiriliyor... %d%%</string>
+    <string name="status_completed">İndirme Tamamlandı!</string>
+    <string name="status_failed">İndirme Başarısız: %s</string>
+    <string name="error_empty_url">Lütfen bir URL girin</string>
+    <string name="permission_required">İndirilenleri kaydetmek için depolama izni gereklidir.</string>
+
+    <string name="permission_granted">Depolama izni verildi</string>
+    <string name="status_updating">yt-dlp güncelleniyor...</string>
+    <string name="status_checking_update">yt-dlp güncellemeleri kontrol ediliyor...</string>
+    <string name="status_update_status">Güncelleme Durumu: </string>
+    <string name="status_update_failed">Güncelleme başarısız: %s</string>
+    <string name="status_updating_before_download">İndirmeden önce yt-dlp güncelleniyor...</string>
+    <string name="status_update_complete">Güncelleme tamamlandı. İndirme başlıyor...</string>
+    <string name="quality_best">En İyi (Varsayılan)</string>
+
+    <string name="error_playing_file">Dosya oynatılırken hata oluştu</string>
+    <string name="error_no_file">Dosya bulunamadı</string>
+
+    <string name="nav_downloads">İndirilenler</string>
+    <string name="now_playing">Şimdi Oynatılıyor</string>
+    <string name="update_button">yt-dlp\'yi Güncelle</string>
+    <string name="select_quality">Kalite Seçin</string>
+    <string name="action_share">Paylaş</string>
+    <string name="nav_home">Ana Sayfa</string>
+</resources>

@@ -77,11 +77,11 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             binding.videoView.setOnErrorListener { _, _, _ ->
-                Toast.makeText(this, "Error playing file", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_playing_file), Toast.LENGTH_SHORT).show()
                 true
             }
         } else {
-            Toast.makeText(this, "No file provided", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_no_file), Toast.LENGTH_SHORT).show()
             finish()
         }
     }
