@@ -18,6 +18,7 @@ import android.content.Intent
 import androidx.core.view.GravityCompat
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
+import android.widget.ArrayAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +29,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
+
+    private val videoQualities = arrayOf("Best (Default)", "1080p", "720p", "480p", "360p")
+    private val audioQualities = arrayOf("Best (Default)", "320kbps", "256kbps", "128kbps")
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -48,6 +52,14 @@ class MainActivity : AppCompatActivity() {
         initLibraries()
         setupListeners()
         requestPermissionsOnLaunch()
+        updateQualityDropdown(false)
+    }
+
+    private fun updateQualityDropdown(isAudio: Boolean) {
+        val options = if (isAudio) audioQualities else videoQualities
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, options)
+        binding.actvQuality.setAdapter(adapter)
+        binding.actvQuality.setText(options[0], false)
     }
 
     private fun requestPermissionsOnLaunch() {
@@ -90,6 +102,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnUpdate.setOnClickListener {
             updateYoutubeDL()
         }
+
+        binding.rgFormat.setOnCheckedChangeListener { _, checkedId ->
+            updateQualityDropdown(checkedId == R.id.rbAudio)
+        }
     }
 
     private fun updateYoutubeDL() {
@@ -131,12 +147,22 @@ class MainActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.progressBar.progress = 0
         binding.btnDownload.isEnabled = false
-        binding.tvStatus.text = "Starting download..."
+        binding.tvStatus.text = "Updating yt-dlp before download..."
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Auto-update before download
+                try {
+                    YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity, YoutubeDL.UpdateChannel.STABLE)
+                    withContext(Dispatchers.Main) {
+                        binding.tvStatus.text = "Update complete. Starting download..."
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Update failed, continuing with download anyway", e)
+                }
+
                 val youtubeDLDir = File(
-                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                     "YTDlpApp"
                 )
                 if (!youtubeDLDir.exists()) {
@@ -146,12 +172,31 @@ class MainActivity : AppCompatActivity() {
                 val request = YoutubeDLRequest(url)
                 request.addOption("-o", youtubeDLDir.absolutePath + "/%(title)s.%(ext)s")
 
+                val selectedQuality = binding.actvQuality.text.toString()
+
                 if (isAudio) {
-                    request.addOption("-f", "bestaudio")
                     request.addOption("--extract-audio")
                     request.addOption("--audio-format", "mp3")
+                    request.addOption("--embed-thumbnail")
+
+                    val audioQualityArg = when (selectedQuality) {
+                        "320kbps" -> "320K"
+                        "256kbps" -> "256K"
+                        "128kbps" -> "128K"
+                        else -> "0" // best
+                    }
+                    request.addOption("--audio-quality", audioQualityArg)
+                    request.addOption("-f", "bestaudio/best")
                 } else {
-                    request.addOption("-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
+                    val formatSelection = when (selectedQuality) {
+                        "1080p" -> "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best"
+                        "720p" -> "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best"
+                        "480p" -> "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best"
+                        "360p" -> "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best"
+                        else -> "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+                    }
+                    request.addOption("-f", formatSelection)
+                    request.addOption("--embed-thumbnail")
                 }
 
                 val processId = "DownloadProcess_${System.currentTimeMillis()}"

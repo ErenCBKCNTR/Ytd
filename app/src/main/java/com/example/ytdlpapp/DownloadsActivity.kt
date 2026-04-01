@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ytdlpapp.databinding.ActivityDownloadsBinding
 import java.io.File
+import androidx.core.content.FileProvider
 
 class DownloadsActivity : AppCompatActivity() {
 
@@ -32,7 +34,7 @@ class DownloadsActivity : AppCompatActivity() {
 
     private fun loadDownloads() {
         val downloadDir = File(
-            getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "YTDlpApp"
         )
         val files = downloadDir.listFiles()?.filter { it.isFile } ?: emptyList()
@@ -43,27 +45,41 @@ class DownloadsActivity : AppCompatActivity() {
         } else {
             binding.tvEmpty.visibility = View.GONE
             binding.rvDownloads.visibility = View.VISIBLE
-            binding.rvDownloads.adapter = DownloadsAdapter(files) { file ->
+            binding.rvDownloads.adapter = DownloadsAdapter(files, { file ->
                 val intent = Intent(this, PlayerActivity::class.java).apply {
                     putExtra("FILE_PATH", file.absolutePath)
                 }
                 startActivity(intent)
-            }
+            }, { fileToShare ->
+                shareFile(fileToShare)
+            })
         }
+    }
+
+    private fun shareFile(file: File) {
+        val uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", file)
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "*/*"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share file"))
     }
 
     private class DownloadsAdapter(
         private val files: List<File>,
-        private val onClick: (File) -> Unit
+        private val onClick: (File) -> Unit,
+        private val onShareClick: (File) -> Unit
     ) : RecyclerView.Adapter<DownloadsAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val tvFileName: TextView = view.findViewById(android.R.id.text1)
+            val tvFileName: TextView = view.findViewById(R.id.tvFileName)
+            val btnShare: ImageButton = view.findViewById(R.id.btnShare)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
-                .inflate(android.R.layout.simple_list_item_1, parent, false)
+                .inflate(R.layout.item_download, parent, false)
             return ViewHolder(view)
         }
 
@@ -72,6 +88,9 @@ class DownloadsActivity : AppCompatActivity() {
             holder.tvFileName.text = file.name
             holder.itemView.setOnClickListener {
                 onClick(file)
+            }
+            holder.btnShare.setOnClickListener {
+                onShareClick(file)
             }
         }
 

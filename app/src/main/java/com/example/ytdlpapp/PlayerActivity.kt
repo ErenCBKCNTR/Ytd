@@ -7,6 +7,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.ytdlpapp.databinding.ActivityPlayerBinding
 import java.io.File
+import android.content.Intent
+import androidx.core.content.FileProvider
+import android.media.MediaMetadataRetriever
+import android.graphics.BitmapFactory
+import android.view.View
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -26,12 +31,46 @@ class PlayerActivity : AppCompatActivity() {
             val file = File(filePath)
             binding.topAppBar.title = file.name
 
+            binding.topAppBar.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_share -> {
+                        val uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", file)
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "*/*"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        startActivity(Intent.createChooser(shareIntent, "Share file"))
+                        true
+                    }
+                    else -> false
+                }
+            }
+
             val mediaController = MediaController(this)
             mediaController.setAnchorView(binding.videoView)
 
             binding.videoView.setMediaController(mediaController)
             binding.videoView.setVideoURI(Uri.fromFile(file))
             binding.videoView.requestFocus()
+
+            try {
+                val retriever = MediaMetadataRetriever()
+                retriever.setDataSource(file.absolutePath)
+                val hasVideo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO)
+                val picture = retriever.embeddedPicture
+
+                if (picture != null && (hasVideo == null || hasVideo == "no")) {
+                    val bitmap = BitmapFactory.decodeByteArray(picture, 0, picture.size)
+                    binding.ivCoverArt.setImageBitmap(bitmap)
+                    binding.ivCoverArt.visibility = View.VISIBLE
+                } else {
+                    binding.ivCoverArt.visibility = View.GONE
+                }
+                retriever.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
             binding.videoView.setOnPreparedListener {
                 binding.videoView.start()
